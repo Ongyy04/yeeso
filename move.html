@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MOVE</title>
+<style>
+  @font-face {
+  font-family: 'Almarai';
+  src: url('./fonts/Almarai-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+  :root{
+    --r: 350px;           
+    --mx: 50vw;           
+    --my: 50vh;           
+    --overlay: #FFD891;   
+    --under-offset: 255px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  /* 아래쪽 페이지 */
+  .under {
+      /* 기존 min-height, padding 유지 대신 중앙 정렬만 강제 */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;       /* 세로 중앙 */
+  padding: 0 2rem 0 20vw;  
+  }
+
+  .under-logo {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    transform: translateY(35px);
+
+
+  }
+.under-dot {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 70%;
+  background: radial-gradient(circle at center,
+              rgba(255,216,145,.95) 0 40%, rgba(255,216,145,.75) 55%, rgba(255,216,145,.4) 100%);
+}
+
+/* 왼쪽으로 이동한 복제 원들 */
+.under-dot::before,
+.under-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 70%;
+  background: radial-gradient(circle at center,
+              rgba(255,216,145,.95) 0 40%, rgba(255,216,145,.75) 55%, rgba(255,216,145,.4) 100%);
+  z-index: -1;
+}
+
+.under-dot::before {
+  transform: translateX(-25px);
+  opacity: 0.7;
+}
+
+.under-dot::after {
+  transform: translateX(-50px);
+  opacity: 0.4;
+}
+
+  .under-word {
+    color: #FFD891;
+    font-family: "Almarai", sans-serif;
+    font-size: clamp(50px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: .5px;
+
+    transform: translateY(15px);
+  }
+
+  .under-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 50px;
+
+  }
+/* 1. 두 레이어에 부드러운 transition 적용 */
+.overlay, .under {
+    transition: opacity 0.8s ease;
+}
+
+/* 2. 페이지가 사라질 때 적용할 클래스 */
+body.page-fading-out .overlay,
+body.page-fading-out .under {
+    opacity: 0;
+    pointer-events: none; /* 사라지는 동안 클릭 방지 */
+}
+/* ▲▲▲ 여기까지 추가 ▲▲▲ */
+  .under-text h1 {
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .under-text h1 mark {
+    background: #FFD891;
+    color: #ffffff;
+    padding: .15em .35em;
+  }
+
+  .under-text p {
+    max-width: 60ch;
+    line-height: 1.65;
+    margin-bottom: .75rem;
+  }
+  
+  
+
+  /* 위쪽 오렌지 오버레이 */
+  .overlay{
+  position: fixed; inset: 0;
+  z-index: 10;
+  background: var(--overlay);
+  display:flex; align-items:center; justify-content:flex-start; padding-left:20vw;
+
+  -webkit-mask: radial-gradient(circle var(--r) at var(--mx) var(--my),
+                                transparent 98%, black 100%);
+          mask: radial-gradient(circle var(--r) at var(--mx) var(--my),
+                                transparent 98%, black 100%);
+}
+  /* 오버레이 내부 로고 */
+  .overlay-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+  }
+  .overlay-dot {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 70%;
+  background: radial-gradient(circle at center,
+              rgba(255,255,255,.95) 0 40%, rgba(255,255,255,.75) 55%, rgba(255,255,255,.4) 100%);
+}
+
+/* 왼쪽으로 이동한 복제 원들 */
+.overlay-dot::before,
+.overlay-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 70%;
+  background: radial-gradient(circle at center,
+              rgba(255,255,255,.95) 0 40%, rgba(255,255,255,.75) 55%, rgba(255,255,255,.4) 100%);
+  z-index: -1;
+}
+
+.overlay-dot::before {
+  transform: translateX(-25px);
+  opacity: 0.7;
+}
+
+.overlay-dot::after {
+  transform: translateX(-50px);
+  opacity: 0.4;
+}
+
+  .overlay-word {
+    color: #ffffff;
+    font-family: "Almarai", sans-serif;
+    font-size: clamp(50px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: .5px;
+  }
+  .spot{
+  position: fixed;
+  left: 0; top: 0;
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 11;              /* overlay 내부에서 위로 */
+  transform: translate(-9999px, -9999px);
+
+  background: radial-gradient(circle at center,
+    rgba(255,255,255,1) 0%);
+  box-shadow:
+    0 0 25px 10px rgba(255,255,255,0.28),
+    0 0 40px 24px rgba(255,216,145,0.20);
+}
+/* ▼▼▼ 여기부터 추가 ▼▼▼ */
+
+/* 1. 두 레이어에 부드러운 transition 적용 */
+.overlay, .under {
+    transition: opacity 0.8s ease;
+}
+
+/* 2. 페이지가 사라질 때 적용할 클래스 */
+body.page-fading-out .overlay,
+body.page-fading-out .under {
+    opacity: 0;
+    pointer-events: none; /* 사라지는 동안 클릭 방지 */
+}
+/* ▲▲▲ 여기까지 추가 ▲▲▲ */
+/* 리드(구멍)는 element가 아니라 overlay의 mask가 담당 → 숨기기 */
+.spot-lead{ display:none; }
+
+/* 트레일 두 개만 사용 (리드보다 왼쪽으로 살짝 겹치게) */
+.spot-trail1{ margin-left: -70px; opacity: .6;  filter: blur(0.5px); }
+.spot-trail2{ margin-left: -140px; opacity: .35; filter: blur(1px);    }
+  /* 기존의 하얀 링 대신 3중 원형 그라데이션 */
+ /* 구멍 가장자리 3겹 링(중앙은 완전 투명 유지) */
+
+/* ===== 스크롤 리빌 공통 ===== */
+.revealable {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity .75s ease, transform .75s ease;
+  will-change: opacity, transform;
+}
+.revealable.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 섹션 레이아웃 (위 스샷 느낌) */
+.section {
+  max-width: 1500px;
+  margin: 8rem auto 6rem;
+  padding: 0 2rem;
+   position: relative;
+}
+.section-title {
+  position: absolute;
+  top: -130px;       /* 위로 살짝 띄우기 */
+  left: -30px;          /* 왼쪽 정렬 */
+  font-size: 20px;
+  font-weight: 400;
+  color: #000;
+  letter-spacing: 0.5px;
+}
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* 1번째 섹션: 왼쪽 2x2 작은 카드 + 오른쪽 큰 카드 */
+.grid--two {
+  grid-template-columns: 1.1fr 1fr;  /* 왼쪽 넓게/오른쪽 살짝 좁게 보이면 수치만 조절 */
+  align-items: start;
+}
+.grid-small {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+
+/* 2번째 섹션: 좌/우 1:1 */
+.grid--split {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* 카드(이미지 자리) */
+.card {
+  background: linear-gradient(180deg, #efefef, #e7e7e7);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  aspect-ratio: 4 / 3;            /* 기본 비율 */
+  overflow: hidden;
+}
+.card--lg { aspect-ratio: 4 / 4.5; } /* 큰 카드 비율 */
+.card--lg2 { aspect-ratio: 4 / 3.5; } /* 큰 카드 비율 */
+
+.card--row{grid-column: 1 / span 2;
+  aspect-ratio: 4 / 2.5;}
+.card--round { border-radius: 24px; }
+
+/* 실제 이미지를 넣을 때 */
+.card > img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+
+
+
+
+  @media (prefers-reduced-motion: reduce){
+    :root { --mx: 20vw; --my: 40vh; }
+  }
+
+  /* 섹션별 테마 색상(기본값) */
+
+/* 오른쪽 퀵바 */
+.quickbar{
+  position: fixed; top: 70%; right: 0px;
+  transform: translateY(-50%) translateX(18px);
+  width: 70px; height: 1000px; 
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 12px 24px rgba(0,0,0,.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease, box-shadow .35s ease;
+  z-index: 30;
+  border-left: 4px solid var(--accent);
+    flex-direction: column;        /* 세로 방향 배치 */
+  justify-content: flex-start;   /* 위쪽 정렬 */
+  align-items: center;
+  padding-top: 30px;             /* 위쪽 여백 */
+
+
+  
+}
+.quickbar.visible{ opacity:1; pointer-events:auto; transform: translateY(-50%) translateX(0); }
+.quickbar:hover{ box-shadow: 0 16px 32px rgba(0,0,0,.18); }
+
+.qb-label{
+  writing-mode: vertical-rl;
+  font-weight: 500;
+  letter-spacing: .4px;
+  color:#000;
+  font-size: clamp(18px, 2.2vw, 24px); /* 글자 크게 */
+}
+
+/* 슬라이드 패널 */
+.drawer{
+  position: fixed; inset: 0 0 0 auto; width: 360px; max-width: 86vw;
+  transform: translateX(100%);
+  background: rgba(255,255,255,.82);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: -24px 0 48px rgba(0,0,0,.18);
+  transition: transform .45s cubic-bezier(.22,.8,.2,1);
+  z-index: 40;
+  border-left: 6px solid var(--accent);
+}
+.drawer.open{ transform: translateX(0); }
+.drawer-body{ padding: 24px 20px 48px; }
+.drawer-close{
+  position:absolute; top:10px; right:12px;
+  font-size:28px; line-height:1; background:transparent; border:0; cursor:pointer;
+  color:#333;
+}
+
+/* 어두운 스크림 */
+.drawer-scrim{
+  position: fixed; inset: 0; background: rgba(187, 187, 187, 0.25);
+  opacity: 0; pointer-events: none; transition: opacity .3s ease; z-index: 35;
+}
+.drawer-scrim.show{ opacity: 1; pointer-events: auto; }
+
+@keyframes pulseBounce {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 10px 5px rgba(255,255,255,1),
+      0 0 10px 30px rgba(255,255,255,0.75),
+      0 0 10px 60px rgba(255,216,145,0.75),
+      0 0 10px 90px rgba(255,216,145,0.8);
+  }
+  40% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 15px 10px rgba(255,255,255,1),
+      0 0 25px 50px rgba(255,255,255,0.75),
+      0 0 20px 80px rgba(255,216,145,0.75),
+      0 0 20px 110px rgba(255,216,145,0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+.overlay.bounce::after {
+  animation: pulseBounce 0.7s ease-out;
+}
+
+@keyframes rippleWave {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,216,145,0.3) 40%, transparent 80%);
+  pointer-events: none;
+  transform: scale(0);
+  animation: rippleWave 1.2s ease-out forwards;
+  z-index: 9;
+}
+
+
+
+</style>
+</head>
+
+
+<body>
+    <!-- 위쪽 페이지(오렌지 배경 + 로고 + 마스크 구멍) -->
+<!-- 👇 커서를 따라오는 스포트라이트 3개 -->
+  <div class="spot spot-lead"></div>
+
+<div class="overlay" id="overlay">
+  <!-- 로고 등 기존 내용 ... -->
+   <div class="overlay-logo">
+      <span class="overlay-dot"></span>
+      <span class="overlay-word">MOTION</span>
+    </div>
+
+  <!-- ✅ 트레일 스팟은 overlay “안”으로 -->
+  <div class="spot spot-trail1"></div>
+  <div class="spot spot-trail2"></div>
+</div>
+
+  <!-- 아래쪽 페이지 -->
+  <main class="under">
+  <div class="under-row">
+    <!-- 왼쪽 로고 -->
+    <div class="under-logo">
+      <span class="under-dot"></span>
+      <span class="under-word">MOTION</span>
+    </div>
+
+    <!-- 오른쪽 텍스트 묶음 -->
+    <div class="under-text">
+      <h1>
+        <mark>움직임</mark>으로 에너지를 만들고, 놀이로 세상을 배우다<span style="color:#FFD891;">!</span>
+      </h1>
+      <p>
+        아이들에게 익숙한 놀이의 동작이 곧 에너지를 만들어내는 힘이 됩니다.<br>
+        몸을 움직이는 즐거움 속에서 아이들은 스스로 에너지의 원리를 배우고 탐구합니다.
+      </p>
+
+    </div>
+  </div>
+</main>
+
+
+  
+
+  <!-- 오른쪽 퀵바 + 슬라이드 패널 -->
+<button class="quickbar" id="quickBar" aria-controls="sideDrawer" aria-expanded="false">
+  <span class="qb-label">Process Archive</span>
+</button>
+
+<aside class="drawer" id="sideDrawer" aria-hidden="true">
+  <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
+  <div class="drawer-body">
+    <h3>Process Archive</h3>
+    <p>여기에 섹션별 컨텐츠, 링크, 이미지 등을 넣으면 돼.</p>
+  </div>
+</aside>
+
+<!-- 패널 열릴 때 배경 클릭 차단용 -->
+<div class="drawer-scrim" id="drawerScrim"></div>
+</section>
+
+
+<!-- 패널 열릴 때 배경 클릭 차단용 -->
+<div class="drawer-scrim" id="drawerScrim"></div>
+</section>
+
+
+<script>
+  const root = document.documentElement;
+
+  function setPos(x, y){
+    root.style.setProperty('--mx', x + 'px');
+    root.style.setProperty('--my', y + 'px');
+  }
+
+  setPos(window.innerWidth/2, window.innerHeight/2);
+
+  window.addEventListener('mousemove', (e) => {
+    setPos(e.clientX, e.clientY);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (t) setPos(t.clientX, t.clientY);
+  }, { passive: true });
+</script>
+
+<script>
+  // --- 기존 spotlight 코드 아래에 이어서 ---
+  const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+    } else {
+      entry.target.classList.remove('is-visible');
+    }
+  });
+}, { threshold: 0.15 }); // 15% 이상 보이면 트리거
+
+document.querySelectorAll('.revealable').forEach(el => io.observe(el));
+
+</script>
+
+<script>
+  // ----- 오른쪽 근처로 가면 퀵바 보이기 -----
+const quickBar = document.getElementById('quickBar');
+const showEdge = () => {
+  // 화면 오른쪽 30% 안으로 커서가 들어오면 표시 (모바일은 항상 표시)
+  const threshold = innerWidth * 0.70;
+  quickBar.classList.toggle('visible', lastX >= threshold || 'ontouchstart' in window);
+};
+let lastX = 0;
+addEventListener('mousemove', e => { lastX = e.clientX; showEdge(); }, {passive:true});
+addEventListener('touchstart', () => { quickBar.classList.add('visible'); }, {passive:true});
+
+// ----- 패널 열고 닫기 -----
+const drawer = document.getElementById('sideDrawer');
+const scrim  = document.getElementById('drawerScrim');
+const drawerClose = document.getElementById('drawerClose');
+
+function openDrawer(){
+  drawer.classList.add('open');
+  scrim.classList.add('show');
+  quickBar.setAttribute('aria-expanded', 'true');
+  drawer.setAttribute('aria-hidden', 'false');
+}
+function closeDrawer(){
+  drawer.classList.remove('open');
+  scrim.classList.remove('show');
+  quickBar.setAttribute('aria-expanded', 'false');
+  drawer.setAttribute('aria-hidden', 'true');
+}
+quickBar.addEventListener('click', openDrawer);
+drawerClose.addEventListener('click', closeDrawer);
+scrim.addEventListener('click', closeDrawer);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+
+
+</script>
+
+
+<script>
+document.addEventListener('click', (e) => {
+  const count = 3; // 몇 개의 원을 만들지 (물결 개수)
+  const delay = 150; // 물결 간 간격(ms)
+
+  for (let i = 0; i < count; i++) {
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple';
+
+    const size = 200 + i * 60; // 바깥으로 갈수록 더 큼
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - size / 2}px`;
+    ripple.style.top = `${e.clientY - size / 2}px`;
+    ripple.style.animationDelay = `${i * delay}ms`;
+
+    document.body.appendChild(ripple);
+
+    // 애니메이션 끝나면 삭제
+    ripple.addEventListener('animationend', () => ripple.remove());
+  }
+});
+</script>
+
+<script>
+
+let targetX = innerWidth/2, targetY = innerHeight/2;
+
+// 리드(구멍) 좌표
+const lead = { x: targetX, y: targetY };
+// 트레일 좌표
+const t1   = { x: targetX - 24, y: targetY };
+const t2   = { x: targetX - 48, y: targetY };
+
+const elT1 = document.querySelector('.spot-trail1');
+const elT2 = document.querySelector('.spot-trail2');
+
+addEventListener('mousemove', e => { targetX = e.clientX; targetY = e.clientY; }, {passive:true});
+addEventListener('touchmove', e => {
+  const t = e.touches[0]; if (t){ targetX = t.clientX; targetY = t.clientY; }
+}, {passive:true});
+
+function setMaskCenter(x, y){
+  root.style.setProperty('--mx', x + 'px');
+  root.style.setProperty('--my', y + 'px');
+}
+
+const lerp = (a,b,t)=>a+(b-a)*t;
+
+function animate(){
+  // 리드(= 구멍) 추종
+  lead.x = lerp(lead.x, targetX, 0.25);
+  lead.y = lerp(lead.y, targetY, 0.25);
+  setMaskCenter(lead.x, lead.y);
+
+  // 트레일 추종
+  t1.x = lerp(t1.x, lead.x - 24, 0.18);
+  t1.y = lerp(t1.y, lead.y,      0.18);
+
+  t2.x = lerp(t2.x, t1.x - 24,   0.14);
+  t2.y = lerp(t2.y, t1.y,        0.14);
+
+  const r = parseFloat(getComputedStyle(root).getPropertyValue('--r')) || 250;
+  if (elT1) elT1.style.transform = `translate(${t1.x - r}px, ${t1.y - r}px)`;
+  if (elT2) elT2.style.transform = `translate(${t2.x - r}px, ${t2.y - r}px)`;
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+
+
+
+</script>
+<script>
+    // --- 스크롤 시 페이지 이동 스크립트 ---
+
+    let isNavigating = false; // 중복 실행 방지 플래그
+
+    window.addEventListener('wheel', function(event) {
+        
+        // 1. 아직 이동 중이 아니고, 마우스 휠을 '아래로' 굴렸을 때
+        if (!isNavigating && event.deltaY > 0) { 
+            
+            isNavigating = true; // 이동 시작, 플래그 설정
+
+            // 2. CSS 애니메이션을 위해 body에 클래스 추가
+            document.body.classList.add('page-fading-out');
+
+            // 3. CSS 애니메이션 시간(0.8초) 후에 페이지 이동
+            setTimeout(() => {
+                window.location.href = 'move_2.html';
+            }, 800); // 800ms = 0.8s
+        }
+    }, { passive: true }); // 스크롤 성능 향상을 위해 passive 옵션 추가
+
+    // (선택 사항) '뒤로가기' 버튼으로 돌아왔을 때 화면이 
+    // 하얗게 나오는 버그 방지
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            isNavigating = false;
+            document.body.classList.remove('page-fading-out');
+        }
+    });
+</script>
+
+
+
+
+</body>
+</html>

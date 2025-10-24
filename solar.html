@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SOLAR Spotlight Reveal</title>
+<style>
+  @font-face {
+    font-family: 'Almarai';
+    src: url('./fonts/Almarai-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  :root {
+    --r: 300px;
+    --mx: 50vw;
+    --my: 50vh;
+    --overlay: #FF5F46;
+    --under-offset: 255px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  /* 아래쪽 페이지 */
+  .under {
+      /* 기존 min-height, padding 유지 대신 중앙 정렬만 강제 */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;       /* 세로 중앙 */
+  padding: 0 2rem 0 20vw;  
+  }
+
+  .under-logo {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+    transform: translateY(20px);
+
+
+  }
+
+  .under-dot {
+    width: 80px;
+    height: 80px;
+    border-radius: 70%;
+    background: radial-gradient(circle at center, rgba(255, 95, 70, .95) 0 40%, rgba(255, 95, 70, .75) 0% 55%, rgba(255, 95, 70, .4) 0% 100%);
+  }
+
+  .under-word {
+    color: #FF5F46;
+    font-family: "Almarai", sans-serif;
+    font-size: clamp(50px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: .5px;
+
+    transform: translateY(15px);
+  }
+
+  .under-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 50px;
+
+  }
+/* 1. 두 레이어에 부드러운 transition 적용 */
+.overlay, .under {
+    transition: opacity 0.8s ease;
+}
+
+/* 2. 페이지가 사라질 때 적용할 클래스 */
+body.page-fading-out .overlay,
+body.page-fading-out .under {
+    opacity: 0;
+    pointer-events: none; /* 사라지는 동안 클릭 방지 */
+}
+/* ▲▲▲ 여기까지 추가 ▲▲▲ */
+  .under-text h1 {
+    font-size: 32px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .under-text h1 mark {
+    background: #FF5F46;
+    color: #ffffff;
+    padding: .15em .35em;
+  }
+
+  .under-text p {
+    max-width: 60ch;
+    line-height: 1.65;
+    margin-bottom: .75rem;
+  }
+
+  /* 위쪽 오렌지 오버레이 */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: var(--overlay);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 20vw;
+    transition: opacity .45s ease, transform .6s ease; /* ← transform 추가 */
+    opacity: 1;
+    transform: translateY(0); /* ← 초기 위치 */
+    -webkit-mask: radial-gradient(circle var(--r) at var(--mx) var(--my), transparent 98%, black 100%);
+    mask: radial-gradient(circle var(--r) at var(--mx) var(--my), transparent 98%, black 100%);
+  }
+
+  /* ← 위로 사라지는 효과용 클래스 */
+  .overlay.fade-up {
+    opacity: 0;
+    transform: translateY(-80px);
+  }
+
+  .overlay-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .overlay-dot {
+    width: 80px;
+    height: 80px;
+    border-radius: 70%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, .95) 0 40%, rgba(255, 255, 255, .75) 0% 55%, rgba(255, 255, 255, .4) 0% 100%);
+  }
+
+  .overlay-word {
+    color: #ffffff;
+    font-family: "Almarai", sans-serif;
+    font-size: clamp(50px, 4vw, 44px);
+    font-weight: 600;
+    letter-spacing: .5px;
+  }
+
+  .overlay::after {
+    content: "";
+    position: fixed;
+    left: calc(var(--mx) - var(--r));
+    top:  calc(var(--my) - var(--r));
+    width: calc(var(--r) * 2);
+    height: calc(var(--r) * 2);
+    border-radius: 70%;
+    background: radial-gradient(circle at center, rgba(255,255,255,1) 0%);
+    pointer-events: none;
+    box-shadow:
+      0 0 10px 5px rgba(255,255,255,1),
+      0 0 10px 30px rgba(255,255,255,0.75),
+      0 0 10px 60px rgba(255,210,200,0.75),
+      0 0 10px 90px rgba(255,170,150,0.8);
+  }
+
+  @keyframes pulseBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+
+  .overlay.bounce::after {
+    animation: pulseBounce 0.7s ease-out;
+  }
+
+  @keyframes rippleWave {
+    0% { transform: scale(0.3); opacity: 0.9; }
+    50% { transform: scale(1.1); opacity: 0.4; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .ripple {
+    position: fixed;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,200,180,0.6) 40%, transparent 80%);
+    pointer-events: none;
+    transform: scale(0);
+    animation: rippleWave 1.2s ease-out forwards;
+    z-index: 9;
+  }
+
+</style>
+</head>
+
+<body>
+  <div class="overlay" id="overlay">
+    <div class="overlay-logo">
+      <span class="overlay-dot"></span>
+      <span class="overlay-word">SOLAR</span>
+    </div>
+  </div>
+
+  <main class="under">
+    <div class="under-row">
+      <div class="under-logo">
+        <span class="under-dot"></span>
+        <span class="under-word">SOLAR</span>
+      </div>
+
+      <div class="under-text">
+        <h1>
+          <mark>태양</mark>을 모으고, 빛으로 세상을 탐구하다<span style="color:#FF5F46;">!</span>
+        </h1>
+        <p>
+          태양은 모든 생명을 키워내는 근원이자, 우리 곁의 가장 따뜻한 에너지입니다. 아이들은 햇살 아래에서 놀며 자연의 순환과 환경의 소중함을 온몸으로 배웁니다.
+        </p>
+      </div>
+    </div>
+  </main>
+
+<script>
+  const root = document.documentElement;
+  const overlay = document.querySelector('.overlay');
+
+  function setPos(x, y) {
+    root.style.setProperty('--mx', x + 'px');
+    root.style.setProperty('--my', y + 'px');
+  }
+
+  setPos(window.innerWidth / 2, window.innerHeight / 2);
+
+  window.addEventListener('mousemove', (e) => setPos(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (t) setPos(t.clientX, t.clientY);
+  }, { passive: true });
+
+  // --- Click animations ---
+  document.addEventListener('click', (e) => {
+    overlay.classList.add('bounce');
+    setTimeout(() => overlay.classList.remove('bounce'), 700);
+
+    const count = 3;
+    const delay = 150;
+
+    for (let i = 0; i < count; i++) {
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      const size = 200 + i * 60;
+      ripple.style.width = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.left = `${e.clientX - size / 2}px`;
+      ripple.style.top = `${e.clientY - size / 2}px`;
+      ripple.style.animationDelay = `${i * delay}ms`;
+      document.body.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    }
+  });
+
+  // --- Scroll fade-up transition ---
+  let isTransitioning = false;
+
+  window.addEventListener('scroll', () => {
+    if (isTransitioning) return;
+
+    const scrollThreshold = 100; // 트리거 스크롤 위치
+    if (window.scrollY > scrollThreshold) {
+      isTransitioning = true;
+
+      overlay.classList.add('fade-up'); // ← 위로 페이드아웃
+
+      setTimeout(() => {
+        window.location.href = 'solar_2.html';
+      }, 600); // transform .6s ease; 와 일치
+    }
+  });
+</script>
+<script>
+    // --- 스크롤 시 페이지 이동 스크립트 ---
+
+    let isNavigating = false; // 중복 실행 방지 플래그
+
+    window.addEventListener('wheel', function(event) {
+        
+        // 1. 아직 이동 중이 아니고, 마우스 휠을 '아래로' 굴렸을 때
+        if (!isNavigating && event.deltaY > 0) { 
+            
+            isNavigating = true; // 이동 시작, 플래그 설정
+
+            // 2. CSS 애니메이션을 위해 body에 클래스 추가
+            document.body.classList.add('page-fading-out');
+
+            // 3. CSS 애니메이션 시간(0.8초) 후에 페이지 이동
+            setTimeout(() => {
+                window.location.href = 'solar_2.html';
+            }, 800); // 800ms = 0.8s
+        }
+    }, { passive: true }); // 스크롤 성능 향상을 위해 passive 옵션 추가
+
+    // (선택 사항) '뒤로가기' 버튼으로 돌아왔을 때 화면이 
+    // 하얗게 나오는 버그 방지
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            isNavigating = false;
+            document.body.classList.remove('page-fading-out');
+        }
+    });
+</script>
+</body>
+</html>

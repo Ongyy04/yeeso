@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seekoo.</title>
+    <style>
+
+        /* ----- 기본 스타일 리셋 ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ----- 전체 페이지 스타일 ----- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+
+            /* 👇 [해결] 이 코드를 추가하세요 */
+            overflow-x: hidden; 
+        }
+
+        /* ✨ 2. 아래로 사라지는 애니메이션 효과를 위한 클래스 추가 */
+        body.fade-out-down {
+            opacity: 0;
+            transform: translateY(50px) ; /* 아래로 50px 이동 */
+        }
+
+        /* ----- 헤더 로고 스타일 ----- */
+        .site-header {
+            position: fixed;
+            top: 20px;
+            left: 50px;
+            z-index: 10;
+        }
+
+        .site-header .logo img {
+            display: block;
+            width: 150px;
+        }
+
+        /* ----- 공통 섹션 스타일 ----- */
+        .hero-section, .reversed-section {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            position: relative;
+            scroll-snap-align: start;
+        }
+        
+        /* ----- 메인 콘텐츠 레이아웃 (Flexbox) ----- */
+        .content-grid {
+            display: flex;
+            align-items: stretch; 
+            gap: 80px; 
+            width: 95%;
+            max-width: 1400px;
+        }
+
+        .main-image-container {
+            flex: 2; 
+            display: flex;
+            align-items: flex-end; 
+            justify-content: flex-start;
+            aspect-ratio: 5 / 4; 
+
+            transform: translateX(-30px) translateY(-30px) scale(1.15);
+
+        }
+
+        .main-video-container {
+            flex: 2; 
+            display: flex;
+            align-items: flex-end; 
+            justify-content: flex-start;
+            aspect-ratio: 5 / 4; 
+            border-radius: 16px;
+            transform: translateX(-350px) translateY(-200px) scale(1.15);
+
+        }
+
+        .main-image-container img{ /* 비디오 스타일 추가 */
+            width: 90%; 
+            max-height: 75vh; 
+            object-fit: cover;
+            display: block;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+        }
+
+        .main-video-container video {
+            flex: 2; 
+            display: flex;
+            align-items: flex-end; 
+            justify-content: flex-start;
+            aspect-ratio: 5 / 4; 
+            border-radius: 16px;
+
+            transform: translateX(-20px) translateY(-30px) scale(0.8);
+
+        }
+
+        .right-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-shot {
+            align-self: flex-end; 
+            margin-bottom: 25px; 
+            transform: rotate(-90deg) translateX(30px) translateY(100px) scale(4);
+        }
+
+        .product-shot2 {
+            align-self: flex-end; 
+            margin-bottom: 25px; 
+            transform: translateX(-200px) translateY(-20px) scale(0.6);
+        }
+
+        .product-shot img {
+            width: 80%;
+            max-width: 200px;
+            height: auto;
+            display: block;
+        }
+        
+        .product-description {
+            font-size: 14px;
+            color: #555;
+            max-width: 1500px;
+            font-weight: 500;
+            align-self: flex-start; 
+
+            transform: translateX(-80px) translateY(10px) scale(1.2);
+        }
+
+        .product-description2 {
+            font-size: 14px;
+            color: #555;
+            max-width: 1500px;
+            font-weight: 500;
+            align-self: flex-start; 
+
+            transform: translateX(0px) translateY(-200px) scale(1.2);
+        }
+
+        .product-description h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        /* ----- 하단 스크롤 아이콘 ----- */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            width: 70px;
+            z-index: 10;
+            transition: transform 0.3s ease-in-out;
+            cursor: pointer; /* 클릭할 수 있도록 커서 모양 변경 */
+        }
+
+        .scroll-indicator img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        /* ----- 반전 레이아웃 스타일 ----- */
+        .main-image-container--reversed {
+            justify-content: flex-end; 
+        }
+        body.fade-out-up {
+            opacity: 0;
+            transform: translateY(-50px); /* 위로 50px 이동 */
+         }
+        .product-shot--reversed {
+            align-self: flex-start; 
+        }
+
+        /* ----- 3번째 페이지 전용 스타일 ----- */
+        .content-grid--no-gap {
+            gap: 0;
+        }
+        
+        .third-section .right-info {
+            padding: 0 40px;
+        }
+
+        .third-section .product-shot img {
+            max-width: 110%;
+            width: 110%;
+        }
+
+        /* ----- 반응형 디자인 (모바일 화면) ----- */
+        @media (max-width: 768px) {
+            .site-header {
+                left: 20px;
+            }
+
+            .scroll-indicator {
+                right: 20px;
+            }
+
+            .hero-section, .reversed-section {
+                padding: 100px 20px;
+            }
+
+            .content-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 40px;
+                width: 90%;
+            }
+
+            .content-grid--reversed {
+                flex-direction: column-reverse;
+            }
+            
+            .right-info {
+                align-items: center;
+                text-align: center;
+                margin-left: 0;
+            }
+
+            .product-shot, .product-shot--reversed {
+                align-self: auto;
+            }
+
+            .product-description {
+                align-self: auto;
+            }
+
+            .third-section .right-info {
+                padding: 0;
+            }
+        }
+
+        .quickbar{
+  position: fixed; top: 70%; right: 0px;
+  transform: translateY(-50%) translateX(18px);
+  width: 70px; height: 1000px; 
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 12px 24px rgba(0,0,0,.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease, box-shadow .35s ease;
+  z-index: 30;
+  border-left: 4px solid var(--accent);
+    flex-direction: column;        /* 세로 방향 배치 */
+  justify-content: flex-start;   /* 위쪽 정렬 */
+  align-items: center;
+  padding-top: 30px;             /* 위쪽 여백 */
+
+
+  
+}
+.quickbar.visible{ opacity:1; pointer-events:auto; transform: translateY(-50%) translateX(0); }
+.quickbar:hover{ box-shadow: 0 16px 32px rgba(0,0,0,.18); }
+
+.qb-label{
+  writing-mode: vertical-rl;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color:#000;
+  font-size: clamp(18px, 2.2vw, 24px); /* 글자 크게 */
+}
+
+/* 슬라이드 패널 */
+.drawer{
+  position: fixed; inset: 0 0 0 auto; width: 430px; max-width: 86vw;
+  transform: translateX(100%);
+  background: rgba(255,255,255,.82);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: -24px 0 48px rgba(0,0,0,.18);
+  transition: transform .45s cubic-bezier(.22,.8,.2,1);
+  z-index: 40;
+  border-left: 6px solid var(--accent);
+}
+.drawer.open{ transform: translateX(0); }
+.drawer-body{ padding: 24px 20px 48px; }
+.drawer-close{
+  position:absolute; top:10px; right:12px;
+  font-size:28px; line-height:1; background:transparent; border:0; cursor:pointer;
+  color:#333;
+}
+
+/* 어두운 스크림 */
+.drawer-scrim{
+  position: fixed; inset: 0; background: rgba(187, 187, 187, 0.25);
+  opacity: 0; pointer-events: none; transition: opacity .3s ease; z-index: 35;
+}
+.drawer-scrim.show{ opacity: 1; pointer-events: auto; }
+
+@keyframes pulseBounce {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 0 10px 5px rgba(255,255,255,1),
+      0 0 10px 30px rgba(255,255,255,0.75),
+      0 0 10px 60px rgba(255,216,145,0.75),
+      0 0 10px 90px rgba(255,216,145,0.8);
+  }
+  40% {
+    transform: scale(1.08);
+    box-shadow:
+      0 0 15px 10px rgba(255,255,255,1),
+      0 0 25px 50px rgba(255,255,255,0.75),
+      0 0 20px 80px rgba(255,216,145,0.75),
+      0 0 20px 110px rgba(255,216,145,0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+.overlay.bounce::after {
+  animation: pulseBounce 0.7s ease-out;
+}
+
+@keyframes rippleWave {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: fixed;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,216,145,0.3) 40%, transparent 80%);
+  pointer-events: none;
+  transform: scale(0);
+  animation: rippleWave 1.2s ease-out forwards;
+  z-index: 9;
+}
+
+
+/* ----- 지그재그 이미지 리스트 ----- */
+.zigzag-list {
+  display: grid;
+  gap: 0px;
+  margin-top: 20px;
+
+}
+
+/* ----- 개별 카드 ----- */
+
+/* ----- 이미지 스타일 (비율/크기 조절 핵심 부분) ----- */
+.zz-img {
+  width: 100%;              /* 가로 크기 기준 */
+  height: auto;             /* 기본은 자동 비율 유지 */
+  aspect-ratio: 5 / 3;      /* 👉 원하는 비율로 설정 (예: 1/1, 16/9, 3/4 등) */
+  object-fit: cover;        /* 잘림 없이 꽉 차게 */
+  border-radius: 12px;
+  transition: transform .3s ease;
+  transform: scale(0.9);
+}
+
+/* hover 시 살짝 확대 효과 */
+.zz-item:hover .zz-img {
+  transform: scale(1.0);
+}
+
+
+
+/* ----- 모바일 대응 ----- */
+@media (max-width: 640px) {
+  .zigzag-list {
+    gap: 16px;
+  }
+  .zigzag-list .zz-item:nth-child(odd),
+  .zigzag-list .zz-item:nth-child(even) {
+    transform: none;
+  }
+  .zz-img {
+    aspect-ratio: 1 / 1; /* 모바일에서 정사각형으로 맞추기 */
+  }
+}
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <a href="#" class="logo">
+            <img src="images/roll_text.png" alt="Seekoo Logo">
+        </a>
+    </header>
+
+    <section class="hero-section">
+        <div class="content-grid">
+            <div class="main-image-container">
+                <img src="images/move_image/picture.png" alt="A child holding a yellow solar-powered device in a natural setting.">
+            </div>
+            <div class="right-info">
+                <div class="product-shot">
+                    <img src="images/move_image/object.png" alt="Top-down view of the solar device.">
+                </div>
+                <p class="product-description">
+                    아이들은을 
+ <strong><span style="font-size: 18px;"> ROLL</span></strong>을 손에 끼우거나 굴리고, <br> 공중에서 돌리거나 비스듬하게 회전시키며 운동 에너지를 모읍니다.
+                    <br><br>
+                    익숙한 놀이 동작 속에서 발생하는 힘이 전기로 전환되어,<br>움직임 그 자체가 에너지 생성의 과정이 됩니다.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <section class="reversed-section third-section">
+        <div class="content-grid content-grid--no-gap">
+<div class="right-info">
+                <div class="product-shot2">
+                    <img src="images/move_image/arduino.png" alt="Top-down view of the solar device.">
+                </div>
+                <p class="product-description2">
+                    아두이노와 INA219 센서가 태양광의 세기를 실시간으로 측정해,<br>
+이 데이터를 본체로 전달하며 빛의 에너지를 전송합니다.<br><br>
+
+FOCUS는 이 흐름을 통해 태양의 에너지를 데이터로 재구성합니다.
+                </p>
+            </div>
+            
+            <div class="main-video-container ">
+                 <div class="video-frame">
+    <video autoplay loop muted playsinline>
+      <source src="images/move_process.mp4" type="video/mp4">
+    </video>
+  </div>
+            </div>
+        </div>
+    </section>
+
+     <!-- 오른쪽 퀵바 + 슬라이드 패널 -->
+<button class="quickbar" id="quickBar" aria-controls="sideDrawer" aria-expanded="false">
+  <span class="qb-label">SCENARIO</span>
+</button>
+
+<aside class="drawer" id="sideDrawer" aria-hidden="true">
+  <button class="drawer-close" id="drawerClose" aria-label="Close">×</button>
+  <div class="drawer-body">
+  <h3 style="margin-bottom:10px;">SCENARIO</h3>
+  <div class="zigzag-list">
+    <figure class="zz-item">
+      <img class="zz-img" src="images/move_image/scenario1.png" alt="시나리오 1" loading="lazy">
+    </figure>
+    <figure class="zz-item">
+      <img class="zz-img" src="images/move_image/scenario2.png" alt="시나리오 2" loading="lazy">
+    </figure>
+    <figure class="zz-item">
+      <img class="zz-img" src="images/move_image/scenario3.png" alt="시나리오 3" loading="lazy">
+    </figure>
+    <figure class="zz-item">
+      <img class="zz-img" src="images/move_image/scenario4.png" alt="시나리오 4" loading="lazy">
+    </figure>
+  </div>
+</div>
+</aside>
+
+<div class="drawer-scrim" id="drawerScrim"></div>
+
+
+    <div class="scroll-indicator">
+        <img src="images/seekoo_image/seekoo_pentagon.png" alt="Scroll down indicator">
+    </div>
+    
+    <script>
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+        let scrollTimeout;
+        let lastScrollY = window.scrollY;
+
+        scrollIndicator.addEventListener('click', () => {
+            // 1. body에 애니메이션 클래스 추가
+            document.documentElement.style.scrollSnapType = 'none';
+            document.body.classList.add('fade-out-down');
+
+            // 2. 애니메이션 시간(0.8초)이 지난 후 페이지 이동
+            setTimeout(() => {
+                window.location.href = 'index.html#main';
+            }, 800); 
+        });
+    </script>
+<script>
+    // --- [NEW] 위로 스크롤 시 페이지 이동 ---
+    let isNavigatingUp = false; // 중복 실행 방지 플래그
+
+    window.addEventListener('wheel', function(event) {
+        
+        // 1. 아직 이동 중이 아니고,
+        // 2. 마우스 휠을 '위로' 굴렸으며 (event.deltaY < 0),
+        // 3. 페이지가 맨 위(스크롤 위치 0)에 있을 때
+        if (!isNavigatingUp && event.deltaY < 0 && window.scrollY === 0) {
+            
+            isNavigatingUp = true; // 이동 시작, 플래그 설정
+
+            // 4. 스크롤 스냅 기능 비활성화 (애니메이션이 자연스럽게 재생되도록)
+            document.documentElement.style.scrollSnapType = 'none';
+
+            // 5. CSS 애니메이션을 위해 body에 클래스 추가
+            document.body.classList.add('fade-out-up');
+
+            // 6. CSS 애니메이션 시간(0.8초) 후에 페이지 이동
+            setTimeout(() => {
+                window.location.href = 'move.html';
+            }, 800); // body의 transition 시간(0.8s)과 일치
+        }
+    }, { passive: true });
+
+    // '뒤로가기' 버튼으로 돌아왔을 때 버그 방지
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            isNavigatingUp = false;
+            document.body.classList.remove('fade-out-up');
+            // '뒤로가기' 시 스크롤 스냅도 다시 활성화
+        }
+    });
+
+    
+</script>
+
+<script>
+  // ----- 오른쪽 근처로 가면 퀵바 보이기 -----
+const quickBar = document.getElementById('quickBar');
+const showEdge = () => {
+  // 화면 오른쪽 30% 안으로 커서가 들어오면 표시 (모바일은 항상 표시)
+  const threshold = innerWidth * 0.70;
+  quickBar.classList.toggle('visible', lastX >= threshold || 'ontouchstart' in window);
+};
+let lastX = 0;
+addEventListener('mousemove', e => { lastX = e.clientX; showEdge(); }, {passive:true});
+addEventListener('touchstart', () => { quickBar.classList.add('visible'); }, {passive:true});
+
+// ----- 패널 열고 닫기 -----
+const drawer = document.getElementById('sideDrawer');
+const scrim  = document.getElementById('drawerScrim');
+const drawerClose = document.getElementById('drawerClose');
+
+function openDrawer(){
+  drawer.classList.add('open');
+  scrim.classList.add('show');
+  quickBar.setAttribute('aria-expanded', 'true');
+  drawer.setAttribute('aria-hidden', 'false');
+}
+function closeDrawer(){
+  drawer.classList.remove('open');
+  scrim.classList.remove('show');
+  quickBar.setAttribute('aria-expanded', 'false');
+  drawer.setAttribute('aria-hidden', 'true');
+}
+quickBar.addEventListener('click', openDrawer);
+drawerClose.addEventListener('click', closeDrawer);
+scrim.addEventListener('click', closeDrawer);
+addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+
+
+</script>
+
+
+<script>
+document.addEventListener('click', (e) => {
+  const count = 3; // 몇 개의 원을 만들지 (물결 개수)
+  const delay = 150; // 물결 간 간격(ms)
+
+  for (let i = 0; i < count; i++) {
+    const ripple = document.createElement('div');
+    ripple.className = 'ripple';
+
+    const size = 200 + i * 60; // 바깥으로 갈수록 더 큼
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${e.clientX - size / 2}px`;
+    ripple.style.top = `${e.clientY - size / 2}px`;
+    ripple.style.animationDelay = `${i * delay}ms`;
+
+    document.body.appendChild(ripple);
+
+    // 애니메이션 끝나면 삭제
+    ripple.addEventListener('animationend', () => ripple.remove());
+  }
+});
+</script>
+
+
+</body>
+</html>
